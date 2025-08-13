@@ -47,7 +47,7 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
         _layout.Element.preferredWidth = _collapsedWidth;
     }
 
-    void Start() => ApplyVisualCollapsedImmediate();
+    void Start() => DeselectTab();
     void OnEnable() => _tabGroup.SubscribeToGroup(this);
     void OnDisable() => CancelAnimation();
 
@@ -64,17 +64,9 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
 
     public void SelectTab()
     {
-        if (_background) _background.gameObject.SetActive(true);
-        if (_text) _text.gameObject.SetActive(true);
-
-        // fire-and-forget with UniTask, but cancellable
-        //AnimateToAsync(_expandedWidth, _scaleFactor, _verticalOffset).Forget();
+        _background.TweenIconAlpha(1, CancellationToken.None).Forget();
         
-        // Animate Background Alpha to 1
-        _background.TweenIconAlphaAsync(1, .2f, CancellationToken.None).Forget();
-        
-        // Animate Icon scale and position synchronously
-        _icon.TweenIconMoveAsync(
+        _icon.TweenIconPosition(
             new Vector3(
                 _icon.RectTransform.localPosition.x, 
                 _icon.RectTransform.localPosition.y + _verticalOffset,
@@ -83,36 +75,25 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
             CancellationToken.None
         ).Forget();
         
-        _icon.TweenIconScaleAsync(Vector3.one * _scaleFactor, CancellationToken.None).Forget();
+        _icon.TweenIconScale(Vector3.one * _scaleFactor, CancellationToken.None).Forget();
         
-        // Animate text alpha to 1
         _text.TweenTextVisibility(1, CancellationToken.None);
         
-        // Animate LayoutElement width
         _layout.TweenWidthAsync(_expandedWidth, CancellationToken.None);
-
-        _layout.Element.layoutPriority = 1;
+        _layout.Element.layoutPriority = -1;
     }
 
     public void DeselectTab()
     {
         if (_tabType == TabType.Locked) return;
-        //AnimateToAsync(_collapsedWidth, 1f, 0f, ApplyVisualCollapsedImmediate).Forget();
         
-        // revert everything and go back to normal
-        _background.TweenIconAlphaAsync(0, .2f, CancellationToken.None).Forget();
-        _icon.ResetIconPositionAsync(CancellationToken.None).Forget();
-        _icon.ResetIconScaleAsync(CancellationToken.None).Forget();
+        _background.TweenIconAlpha(0, CancellationToken.None).Forget();
+        _icon.ResetIconPosition(CancellationToken.None).Forget();
+        _icon.ResetIconScale(CancellationToken.None).Forget();
         _text.TweenTextVisibility(0, CancellationToken.None);
         _layout.TweenWidthAsync(_collapsedWidth, CancellationToken.None);
 
         _layout.Element.layoutPriority = 1;
-    }
-
-    void ApplyVisualCollapsedImmediate()
-    {
-        if (_background) _background.gameObject.SetActive(false);
-        if (_text) _text.gameObject.SetActive(false);
     }
 
     void CancelAnimation()

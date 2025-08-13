@@ -1,16 +1,17 @@
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class AnimatedLayoutElement : MonoBehaviour
 {
     [SerializeField] private float _resizeDuration = 0.18f;
-    [SerializeField] private AnimationCurve _resizeCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    [SerializeField] private LeanTweenType _resizeCurve = LeanTweenType.easeInBounce;
 
     private RectTransform _rectTransform;
     private LayoutElement _layoutElement;
-    private int _animationID;
+    private int _widthActionID;
 
     public LayoutElement Element => _layoutElement;
     public RectTransform RectTransform => _rectTransform;
@@ -22,29 +23,39 @@ public class AnimatedLayoutElement : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void TweenWidthAsync(float to, CancellationToken ct)
+    public UniTask TweenWidthAsync(float to, CancellationToken ct)
     {
-        _animationID = LeanTween.value(gameObject, _rectTransform.rect.width, to, _resizeDuration)
+        float from = _layoutElement.preferredWidth > 0f ? _layoutElement.preferredWidth : _rectTransform.rect.width;
+
+        if (_widthActionID >= 0) { LeanTween.cancel(_widthActionID); _widthActionID = -1; }
+
+        var completionSource = new UniTaskCompletionSource();
+
+        _widthActionID = LeanTween.value(gameObject, from, to, _resizeDuration)
             .setEase(_resizeCurve)
             .setIgnoreTimeScale(true)
             .setOnUpdate((value) =>
             {
                 _layoutElement.preferredWidth = value;
-                if (transform.parent is RectTransform parent) LayoutRebuilder.MarkLayoutForRebuild(parent);
+                if (transform.parent is RectTransform parent)
+                    LayoutRebuilder.MarkLayoutForRebuild(parent);
             })
             .setOnComplete(() =>
             {
-                _animationID = -1;
+                _widthActionID = -1;
+                completionSource.TrySetResult();
             }).id;
 
-        // Cancel hook
         ct.Register(() =>
         {
-            if (_animationID >= 0)
+            if (_widthActionID >= 0)
             {
-                LeanTween.cancel(_animationID);
-                _animationID = -1;
+                LeanTween.cancel(_widthActionID);
+                _widthActionID = -1;
+                completionSource.TrySetCanceled();
             }
         });
+
+        return completionSource.Task;
     }
 }
