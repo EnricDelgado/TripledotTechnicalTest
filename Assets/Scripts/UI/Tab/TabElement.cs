@@ -26,8 +26,8 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
     [SerializeField] private TabType _tabType;
     
     [Header("Animation Clips")]
-    [SerializeField] private IconAnimClip _selectClip;
-    [SerializeField] private IconAnimClip _deselectClip;
+    [SerializeField] private IconTweenClip _selectClip;
+    [SerializeField] private IconTweenClip _deselectClip;
 
     private AnimatedLayoutElement _layout;
     private TabState _currentState = TabState.Unselected;

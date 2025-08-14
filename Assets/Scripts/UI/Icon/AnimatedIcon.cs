@@ -140,36 +140,48 @@ public class AnimatedIcon : TweenedElement
     #endregion
     
     #region Clip Tween Logic
-    public async UniTask PlayClip(IconAnimClip clip, CancellationToken ct)
+    public async UniTask PlayClip(IconTweenClip clip, CancellationToken ct)
     {
         var tasks = new List<UniTask>(3);
 
         if (clip.useScale)
-            tasks.Add(TweenIconScaleFrom(
-                from: clip.scaleFrom,
-                to:   clip.scaleTo,
-                duration: clip.scaleDuration,
-                easeType: clip.scaleEase,
-                cancelToken: ct
-            ));
+        {
+            var from = (clip.scaleFrom == FromMode.Current) ? _iconTransform.localScale : _initialScale;
+            Vector3 to;
+            switch (clip.scaleToMode)
+            {
+                case ToModeScale.Absolute:   
+                    to = clip.scaleTo; 
+                    break;
+                case ToModeScale.MultiplyBy: 
+                    to = from * clip.scaleMultiply; 
+                    break;
+                case ToModeScale.ByOffset:   
+                    to = from + clip.scaleDelta; 
+                    break;
+                default:                     
+                    to = from; 
+                    break;
+            }
+
+            tasks.Add(TweenIconScaleFrom(from, to, clip.scaleDuration, clip.scaleEase, ct));
+        }
 
         if (clip.useMove)
-            tasks.Add(TweenIconPositionFrom(
-                from: clip.moveFrom,
-                to:   clip.moveTo,
-                duration: clip.moveDuration,
-                easeType: clip.moveEase,
-                cancelToken: ct
-            ));
+        {
+            var from = (clip.moveFrom == FromMode.Current) ? _iconTransform.localPosition : _initialPosition;
+            Vector3 to = (clip.moveToMode == ToModePosition.Absolute) ? clip.moveTo : from + clip.moveOffset;
+
+            tasks.Add(TweenIconPositionFrom(from, to, clip.moveDuration, clip.moveEase, ct));
+        }
 
         if (clip.useAlpha)
-            tasks.Add(TweenIconAlphaFrom(
-                from: clip.alphaFrom,
-                to:   clip.alphaTo,
-                duration: clip.alphaDuration,
-                easeType: clip.alphaEase,
-                cancelToken: ct
-            ));
+        {
+            float from = (clip.alphaFrom == FromMode.Current) ? _icon.color.a : _initialAlpha;
+            float to = (clip.alphaToMode == ToModeAlpha.Absolute) ? clip.alphaTo : from + clip.alphaDelta;
+
+            tasks.Add(TweenIconAlphaFrom(from, to, clip.alphaDuration, clip.alphaEase, ct));
+        }
 
         await UniTask.WhenAll(tasks);
     }
