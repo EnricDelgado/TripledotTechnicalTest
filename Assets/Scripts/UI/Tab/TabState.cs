@@ -1,0 +1,1 @@
+public enum TabState {Selected, Unselected}

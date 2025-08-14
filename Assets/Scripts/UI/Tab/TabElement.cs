@@ -24,20 +24,16 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float _verticalOffset = 10f;
     [SerializeField] private float _scaleFactor = 1.2f;
     [SerializeField] private TabType _tabType;
+    
+    [Header("Animation Clips")]
+    [SerializeField] private IconAnimClip _selectClip;
+    [SerializeField] private IconAnimClip _deselectClip;
+
+    private AnimatedLayoutElement _layout;
+    private TabState _currentState = TabState.Unselected;
 
     public TabType TabType => _tabType;
 
-    AnimatedLayoutElement _layout;
-    Vector3 _iconScale0;
-    Vector3 _iconLocalPos0;
-
-    // We keep one CTS per element to cancel any running animation when a new one starts
-    CancellationTokenSource _animCts;
-
-    // Track tween ids so we can cancel precisely
-    int _widthTweenId = -1;
-    int _scaleTweenId = -1;
-    int _moveTweenId  = -1;
 
     
     void Awake()
@@ -62,9 +58,12 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
 
     public void SelectTab()
     {
-        _background.TweenIconAlpha(1, CancellationToken.None).Forget();
+        if (_currentState == TabState.Selected) return;
         
-        _icon.TweenIconPosition(
+        _background.TweenIconAlpha(1, CancellationToken.None).Forget();
+
+        /*
+         _icon.TweenIconPosition(
             new Vector3(
                 _icon.RectTransform.localPosition.x, 
                 _icon.RectTransform.localPosition.y + _verticalOffset,
@@ -72,26 +71,35 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
             ), 
             CancellationToken.None
         ).Forget();
-        
-        _icon.TweenIconScale(Vector3.one * _scaleFactor, CancellationToken.None).Forget();
-        
+        _icon.TweenIconScale(Vector3.one * _scaleFactor, CancellationToken.None).Forget();        
+        */
+
+        _icon.PlayClip(_selectClip, CancellationToken.None).Forget();
+
         _text.TweenTextVisibility(1, CancellationToken.None);
         
         _layout.TweenWidthAsync(_expandedWidth, CancellationToken.None);
         _layout.Element.layoutPriority = -1;
+        
+        _currentState = TabState.Selected;
     }
 
     public void DeselectTab()
     {
         if (_tabType == TabType.Locked) return;
+        if (_currentState == TabState.Unselected) return;
+        
+        /*_icon.ResetIconPosition(CancellationToken.None).Forget();
+        _icon.ResetIconScale(CancellationToken.None).Forget();*/
+        _icon.PlayClip(_deselectClip, CancellationToken.None).Forget();
         
         _background.TweenIconAlpha(0, CancellationToken.None).Forget();
-        _icon.ResetIconPosition(CancellationToken.None).Forget();
-        _icon.ResetIconScale(CancellationToken.None).Forget();
         _text.TweenTextVisibility(0, CancellationToken.None);
         _layout.TweenWidthAsync(_collapsedWidth, CancellationToken.None);
 
         _layout.Element.layoutPriority = 1;
+        
+        _currentState = TabState.Unselected;
     }
     
     public void SetButtonLocked() => Debug.Log("[EDC] Button locked");

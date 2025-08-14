@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -136,5 +137,41 @@ public class AnimatedIcon : TweenedElement
     
     public async UniTask TweenIconAlpha(float to, CancellationToken cancelToken) => await TweenIconAlphaFrom(_icon.color.a, to, _alphaDuration, _alphaEase, cancelToken);
     public async UniTask ResetIconAlpha(CancellationToken cancelToken) => await TweenIconAlpha(_initialAlpha, cancelToken);
+    #endregion
+    
+    #region Clip Tween Logic
+    public async UniTask PlayClip(IconAnimClip clip, CancellationToken ct)
+    {
+        var tasks = new List<UniTask>(3);
+
+        if (clip.useScale)
+            tasks.Add(TweenIconScaleFrom(
+                from: clip.scaleFrom,
+                to:   clip.scaleTo,
+                duration: clip.scaleDuration,
+                easeType: clip.scaleEase,
+                cancelToken: ct
+            ));
+
+        if (clip.useMove)
+            tasks.Add(TweenIconPositionFrom(
+                from: clip.moveFrom,
+                to:   clip.moveTo,
+                duration: clip.moveDuration,
+                easeType: clip.moveEase,
+                cancelToken: ct
+            ));
+
+        if (clip.useAlpha)
+            tasks.Add(TweenIconAlphaFrom(
+                from: clip.alphaFrom,
+                to:   clip.alphaTo,
+                duration: clip.alphaDuration,
+                easeType: clip.alphaEase,
+                cancelToken: ct
+            ));
+
+        await UniTask.WhenAll(tasks);
+    }
     #endregion
 }
