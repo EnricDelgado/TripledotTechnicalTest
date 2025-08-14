@@ -19,7 +19,6 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float _expandedWidth = 220f;
     [SerializeField] private float _collapsedWidth = 120f;
     [SerializeField] private float _resizeDuration = 0.18f;
-    [SerializeField] private AnimationCurve _resizeCurve = AnimationCurve.EaseInOut(0,0,1,1);
 
     [Header("Tab Values")]
     [SerializeField] private float _verticalOffset = 10f;
@@ -49,7 +48,6 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
 
     void Start() => DeselectTab();
     void OnEnable() => _tabGroup.SubscribeToGroup(this);
-    void OnDisable() => CancelAnimation();
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -94,17 +92,6 @@ public class TabElement : MonoBehaviour, IPointerClickHandler
         _layout.TweenWidthAsync(_collapsedWidth, CancellationToken.None);
 
         _layout.Element.layoutPriority = 1;
-    }
-
-    void CancelAnimation()
-    {
-        _animCts?.Cancel();
-        _animCts?.Dispose();
-        _animCts = null;
-
-        if (_widthTweenId >= 0) { LeanTween.cancel(_widthTweenId); _widthTweenId = -1; }
-        if (_scaleTweenId >= 0) { LeanTween.cancel(_scaleTweenId); _scaleTweenId = -1; }
-        if (_moveTweenId  >= 0) { LeanTween.cancel(_moveTweenId);  _moveTweenId  = -1; }
     }
     
     public void SetButtonLocked() => Debug.Log("[EDC] Button locked");

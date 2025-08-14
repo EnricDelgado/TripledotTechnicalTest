@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 
-public class AnimatedIcon : MonoBehaviour
+public class AnimatedIcon : TweenedElement
 {
     [Header("Icon Elements")]
     [SerializeField] private Image _icon;
@@ -30,10 +28,7 @@ public class AnimatedIcon : MonoBehaviour
     private Vector3 _initialScale;
     private float _initialAlpha;
     
-    private Dictionary<AnimationChannel, int> _tweens = new ();
-    
     public RectTransform RectTransform => _iconTransform;
-    public enum AnimationChannel {Scale, Position, Alpha}
 
 
     private void Awake()
@@ -42,52 +37,17 @@ public class AnimatedIcon : MonoBehaviour
         if (_icon == null) _icon = GetComponent<Image>();
 
         _initialScale = _iconTransform.localScale;
-        _initialPosition   = _iconTransform.localPosition;
+        _initialPosition = _iconTransform.localPosition;
         _initialAlpha = _icon.color.a;
     }
 
-    private void Start()
-    {
-        _initialPosition = _iconTransform.localPosition;
-        _initialScale = _iconTransform.localScale;
-    }
-
     private void OnDisable() => CancelAllChannels();
-
-    #region Channel Logic
-    private void FillChannel(AnimationChannel channel, int id) => _tweens[channel] = id;
-    private void ClearChannel(AnimationChannel channel) => _tweens[channel] = -1;
-
-    private void CancelChannel(AnimationChannel channel)
-    {
-        if (_tweens.TryGetValue(channel, out var id) && id >= 0)
-        {
-            LeanTween.cancel(id);
-            ClearChannel(channel);
-        }
-    }
-
-    private void CancelAllChannels()
-    {
-        LeanTween.cancelAll();
-        _tweens.Clear();
-    }
-
-    private void RegisterChannelCancelationToken(CancellationToken token, AnimationChannel channel, UniTaskCompletionSource completionSource)
-    {
-        token.Register(() =>
-        {
-            CancelChannel(channel);
-            completionSource.TrySetCanceled();
-        });
-    }
-    #endregion
     
     #region Scale Tween Logic
     private UniTask TweenIconScaleFrom(Vector3 from, Vector3 to, float duration, LeanTweenType easeType, CancellationToken cancelToken)
     {
-        CancelChannel(AnimationChannel.Scale);
-        var completionSoruce = new UniTaskCompletionSource();
+        CancelChannel(TweenChannel.Scale);
+        var completionSource = new UniTaskCompletionSource();
 
         _iconTransform.localScale = from;
         
@@ -96,16 +56,16 @@ public class AnimatedIcon : MonoBehaviour
             .setIgnoreTimeScale(true)
             .setOnComplete(() =>
             {
-                ClearChannel(AnimationChannel.Scale);
-                completionSoruce.TrySetResult();
+                ClearChannel(TweenChannel.Scale);
+                completionSource.TrySetResult();
             })
             .id;
         
-        FillChannel(AnimationChannel.Scale, actionID);
+        FillChannel(TweenChannel.Scale, actionID);
         
-        RegisterChannelCancelationToken(cancelToken, AnimationChannel.Scale, completionSoruce);
+        RegisterChannelCancellationToken(cancelToken, TweenChannel.Scale, completionSource);
         
-        return completionSoruce.Task;
+        return completionSource.Task;
     }
     
     public async UniTask TweenIconScale(Vector3 to, CancellationToken cancelToken) => await TweenIconScaleFrom(_iconTransform.localScale, to, _resizeDuration, _resizeCurve, cancelToken);
@@ -115,9 +75,9 @@ public class AnimatedIcon : MonoBehaviour
     #region Movement Tween Logic
     private UniTask TweenIconPositionFrom(Vector3 from, Vector3 to, float duration, LeanTweenType easeType, CancellationToken cancelToken)
     {
-        CancelChannel(AnimationChannel.Position);
+        CancelChannel(TweenChannel.Position);
         
-        var completionSoruce = new UniTaskCompletionSource();
+        var completionSource = new UniTaskCompletionSource();
         
         _iconTransform.localPosition = from;
 
@@ -126,15 +86,15 @@ public class AnimatedIcon : MonoBehaviour
             .setIgnoreTimeScale(true)
             .setOnComplete(() =>
             {
-                ClearChannel(AnimationChannel.Position);
-                completionSoruce.TrySetResult();
+                ClearChannel(TweenChannel.Position);
+                completionSource.TrySetResult();
             })
             .id;
         
-        FillChannel(AnimationChannel.Position, actionID);
-        RegisterChannelCancelationToken(cancelToken, AnimationChannel.Position, completionSoruce);
+        FillChannel(TweenChannel.Position, actionID);
+        RegisterChannelCancellationToken(cancelToken, TweenChannel.Position, completionSource);
         
-        return completionSoruce.Task;
+        return completionSource.Task;
     }
     
     public async UniTask TweenIconPosition(Vector3 to, CancellationToken cancelToken) => await TweenIconPositionFrom(_iconTransform.localPosition, to, _movementDuration, _movementEase, cancelToken);
@@ -145,9 +105,9 @@ public class AnimatedIcon : MonoBehaviour
     private UniTask TweenIconAlphaFrom(float from, float to, float duration, LeanTweenType easeType,
         CancellationToken cancelToken)
     {
-        CancelChannel(AnimationChannel.Alpha);
+        CancelChannel(TweenChannel.Alpha);
 
-        var completionSoruce = new UniTaskCompletionSource();
+        var completionSource = new UniTaskCompletionSource();
 
         var color = _icon.color;
         color.a = from;
@@ -164,14 +124,14 @@ public class AnimatedIcon : MonoBehaviour
             })
             .setOnComplete(() =>
             {
-                ClearChannel(AnimationChannel.Alpha);
-                completionSoruce.TrySetResult();
+                ClearChannel(TweenChannel.Alpha);
+                completionSource.TrySetResult();
             }).id;
         
-        FillChannel(AnimationChannel.Alpha, actionID);
-        RegisterChannelCancelationToken(cancelToken, AnimationChannel.Alpha, completionSoruce);
+        FillChannel(TweenChannel.Alpha, actionID);
+        RegisterChannelCancellationToken(cancelToken, TweenChannel.Alpha, completionSource);
         
-        return completionSoruce.Task;
+        return completionSource.Task;
     }
     
     public async UniTask TweenIconAlpha(float to, CancellationToken cancelToken) => await TweenIconAlphaFrom(_icon.color.a, to, _alphaDuration, _alphaEase, cancelToken);

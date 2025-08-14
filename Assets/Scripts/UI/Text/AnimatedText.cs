@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
 
-public class AnimatedText : MonoBehaviour
+public class AnimatedText : TweenedElement
 {
     [SerializeField] private TextMeshProUGUI _text;
     [SerializeField] private float _duration = .2f;
@@ -11,15 +11,12 @@ public class AnimatedText : MonoBehaviour
 
     private int _alphaTweenId = -1;
 
-    public UniTask TweenTextVisibility(float to, CancellationToken ct)
+    public UniTask TweenTextVisibility(float to, CancellationToken cancelToken)
     {
-        if (_text == null) return UniTask.CompletedTask;
+        CancelChannel(TweenChannel.Text);
+        var completionSource = new UniTaskCompletionSource();
 
         float from = _text.color.a;
-
-        if (_alphaTweenId >= 0) { LeanTween.cancel(_alphaTweenId); _alphaTweenId = -1; }
-
-        var completionSource = new UniTaskCompletionSource();
 
         _alphaTweenId = LeanTween.value(gameObject, from, to, _duration)
             .setEase(_curve)
@@ -30,19 +27,13 @@ public class AnimatedText : MonoBehaviour
             })
             .setOnComplete(() =>
             {
-                _alphaTweenId = -1;
+                ClearChannel(TweenChannel.Text);
                 completionSource.TrySetResult();
             }).id;
-
-        ct.Register(() =>
-        {
-            if (_alphaTweenId >= 0)
-            {
-                LeanTween.cancel(_alphaTweenId);
-                _alphaTweenId = -1;
-                completionSource.TrySetCanceled();
-            }
-        });
+        
+        FillChannel(TweenChannel.Text, _alphaTweenId);
+        
+        RegisterChannelCancellationToken(cancelToken, TweenChannel.Text, completionSource);
 
         return completionSource.Task;
     }

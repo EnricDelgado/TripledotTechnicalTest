@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AnimatedLayoutElement : MonoBehaviour
+public class AnimatedLayoutElement : TweenedElement
 {
     [SerializeField] private float _resizeDuration = 0.18f;
     [SerializeField] private LeanTweenType _resizeCurve = LeanTweenType.easeInBounce;
@@ -14,7 +14,6 @@ public class AnimatedLayoutElement : MonoBehaviour
     private int _widthActionID;
 
     public LayoutElement Element => _layoutElement;
-    public RectTransform RectTransform => _rectTransform;
 
 
     private void Awake()
@@ -23,13 +22,12 @@ public class AnimatedLayoutElement : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public UniTask TweenWidthAsync(float to, CancellationToken ct)
+    public UniTask TweenWidthAsync(float to, CancellationToken cancelToken)
     {
-        float from = _layoutElement.preferredWidth > 0f ? _layoutElement.preferredWidth : _rectTransform.rect.width;
-
-        if (_widthActionID >= 0) { LeanTween.cancel(_widthActionID); _widthActionID = -1; }
-
+        CancelChannel(TweenChannel.LayoutWidth);
         var completionSource = new UniTaskCompletionSource();
+        
+        float from = _layoutElement.preferredWidth > 0f ? _layoutElement.preferredWidth : _rectTransform.rect.width;
 
         _widthActionID = LeanTween.value(gameObject, from, to, _resizeDuration)
             .setEase(_resizeCurve)
@@ -42,20 +40,12 @@ public class AnimatedLayoutElement : MonoBehaviour
             })
             .setOnComplete(() =>
             {
-                _widthActionID = -1;
+                ClearChannel(TweenChannel.LayoutWidth);
                 completionSource.TrySetResult();
             }).id;
 
-        ct.Register(() =>
-        {
-            if (_widthActionID >= 0)
-            {
-                LeanTween.cancel(_widthActionID);
-                _widthActionID = -1;
-                completionSource.TrySetCanceled();
-            }
-        });
-
+        RegisterChannelCancellationToken(cancelToken, TweenChannel.LayoutWidth, completionSource);
+        
         return completionSource.Task;
     }
 }
