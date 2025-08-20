@@ -1,3 +1,5 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class ScreenActor : MonoBehaviour
@@ -28,6 +30,7 @@ public class ScreenActor : MonoBehaviour
         _actor.SetActive(true);
         BounceElement(_actor);
         RotateElement(_actor);
+        PlayPS(_actorVFX).Forget();
     }
 
     public void HideActor()
@@ -68,5 +71,18 @@ public class ScreenActor : MonoBehaviour
             {
                 element.transform.localScale = _actorInitialScale;
             });
+    }
+
+    private async UniTask PlayPS(ParticleSystem ps)
+    {
+        ps.gameObject.SetActive(true);
+    
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ps.Play();
+
+        await UniTask.WaitUntil(() => !ps.IsAlive());
+        
+        ps.Stop();
+        ps.gameObject.SetActive(false);
     }
 }
