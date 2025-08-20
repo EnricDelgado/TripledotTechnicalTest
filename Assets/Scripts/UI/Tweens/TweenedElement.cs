@@ -2,14 +2,25 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class TweenedElement : MonoBehaviour
 {
     private Dictionary<TweenChannel, int> _tweens = new ();
     
+    private void OnDisable() => CancelAllChannels();
+
+    public virtual async UniTask PlayClip(TweenClip clip, CancellationToken ct)
+    {
+        await UniTask.Yield();
+    }
     
+    public virtual async UniTask PlayClip(CanvasTweenClip clip, CancellationToken ct)
+    {
+        await UniTask.Yield();
+    }
+
     protected void FillChannel(TweenChannel channel, int id) => _tweens[channel] = id;
+    
     protected void ClearChannel(TweenChannel channel) => _tweens[channel] = -1;
 
     protected void CancelChannel(TweenChannel channel)
@@ -30,12 +41,16 @@ public class TweenedElement : MonoBehaviour
         _tweens.Clear();
     }
 
-    protected void RegisterChannelCancellationToken(CancellationToken token, TweenChannel channel, UniTaskCompletionSource completionSource)
+    protected void RegisterChannelCancellationToken(CancellationToken token, TweenChannel channel, int id, UniTaskCompletionSource completionSource)
     {
         token.Register(() =>
         {
-            CancelChannel(channel);
-            completionSource.TrySetCanceled();
+            if (_tweens.TryGetValue(channel, out var currentID) && id == currentID)
+            {
+                LeanTween.cancel(currentID);
+                ClearChannel(channel);
+                completionSource.TrySetCanceled();
+            }
         });
     }
 }
