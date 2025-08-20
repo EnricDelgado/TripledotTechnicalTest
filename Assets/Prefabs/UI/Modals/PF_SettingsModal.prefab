@@ -92,6 +92,14 @@ PrefabInstance:
       propertyPath: _fadeDuration
       value: 0.18
       objectReference: {fileID: 0}
+    - target: {fileID: 2645165021856195805, guid: c15c21dc29e104f70b02cf31539c362b, type: 3}
+      propertyPath: _fadeEaseType
+      value: 26
+      objectReference: {fileID: 0}
+    - target: {fileID: 3227047350161136158, guid: c15c21dc29e104f70b02cf31539c362b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 45
+      objectReference: {fileID: 0}
     - target: {fileID: 3839032107214824171, guid: c15c21dc29e104f70b02cf31539c362b, type: 3}
       propertyPath: m_Name
       value: PF_SettingsModal
