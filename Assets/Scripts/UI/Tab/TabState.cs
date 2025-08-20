@@ -1,1 +1,1 @@
-public enum TabState {Selected, Unselected}
+public enum TabState {Selected, Unselected, Locked}

@@ -2,105 +2,91 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using TMPro;
+
+[System.Serializable]
+public class TabEvent : UnityEvent { }
 
 [RequireComponent(typeof(LayoutElement))]
 public class TabElement : MonoBehaviour, IPointerClickHandler
 {
     [Header("Tab Elements")]
     [SerializeField] private TabGroup _tabGroup;
-    [SerializeField] private AnimatedIcon _background;
-    [SerializeField] private AnimatedIcon _icon;
-    [SerializeField] private AnimatedText _text;
-
-    [Header("Tab Sizing")]
-    [SerializeField] private float _expandedWidth = 220f;
-    [SerializeField] private float _collapsedWidth = 120f;
-    [SerializeField] private float _resizeDuration = 0.18f;
-
-    [Header("Tab Values")]
-    [SerializeField] private float _verticalOffset = 10f;
-    [SerializeField] private float _scaleFactor = 1.2f;
     [SerializeField] private TabType _tabType;
+    [SerializeField] private TweenedElement _background;
+    [SerializeField] private TweenedElement _icon;
+    [SerializeField] private TweenedElement _text;
     
     [Header("Animation Clips")]
-    [SerializeField] private IconTweenClip _selectClip;
-    [SerializeField] private IconTweenClip _deselectClip;
+    [SerializeField] private TweenClip _iconSelectClip;
+    [SerializeField] private TweenClip _backgroundSelectClip;
+    [SerializeField] private TweenClip _textSelectClip;
+    [SerializeField] private TweenClip _layoutSelectClip;
+    [SerializeField] private TweenClip _iconDeselectClip;
+    [SerializeField] private TweenClip _backgroundDeselectClip;
+    [SerializeField] private TweenClip _textDeselectClip;
+    [SerializeField] private TweenClip _layoutDeselectClip;
+    [SerializeField] private TweenClip _lockedTabClip;
+
+    [Header("Action Trigger")] 
+    [SerializeField] private TabEvent _tabEnterEvent;
+    [SerializeField] private TabEvent _tabExitEvent;
+    [SerializeField] private TabEvent _tabLockedEvent;
 
     private AnimatedLayoutElement _layout;
-    private TabState _currentState = TabState.Unselected;
-
+    private TabState _tabState = TabState.Unselected;
+    
     public TabType TabType => _tabType;
 
-
     
-    void Awake()
-    {
-        _layout = GetComponent<AnimatedLayoutElement>();
-        _layout.Element.preferredWidth = _collapsedWidth;
-    }
-
-    void Start() => DeselectTab();
+    void Awake() => _layout = GetComponent<AnimatedLayoutElement>();
     void OnEnable() => _tabGroup.SubscribeToGroup(this);
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (_tabType == TabType.Locked)
-        {
-            SetButtonLocked();
-            return;
-        }
-        
-        _tabGroup.OnTabSelected(this);
+            LockedTab();
+        else 
+            _tabGroup.OnTabSelected(this);
     }
 
     public void SelectTab()
     {
-        if (_currentState == TabState.Selected) return;
+        if (_tabState == TabState.Selected) return;
         
-        _background.TweenIconAlpha(1, CancellationToken.None).Forget();
-
-        /*
-         _icon.TweenIconPosition(
-            new Vector3(
-                _icon.RectTransform.localPosition.x, 
-                _icon.RectTransform.localPosition.y + _verticalOffset,
-                _icon.RectTransform.localPosition.z
-            ), 
-            CancellationToken.None
-        ).Forget();
-        _icon.TweenIconScale(Vector3.one * _scaleFactor, CancellationToken.None).Forget();        
-        */
-
-        _icon.PlayClip(_selectClip, CancellationToken.None).Forget();
-
-        _text.TweenTextVisibility(1, CancellationToken.None);
+        _icon.PlayClip(_iconSelectClip, CancellationToken.None).Forget();
+        _background.PlayClip(_backgroundSelectClip, CancellationToken.None).Forget();
+        _text.PlayClip(_textSelectClip, CancellationToken.None).Forget();
+        _layout.PlayClip(_layoutSelectClip, CancellationToken.None).Forget();
         
-        _layout.TweenWidthAsync(_expandedWidth, CancellationToken.None);
         _layout.Element.layoutPriority = -1;
         
-        _currentState = TabState.Selected;
+        _tabState = TabState.Selected;
+        
+        _tabEnterEvent?.Invoke();
     }
 
     public void DeselectTab()
     {
-        if (_tabType == TabType.Locked) return;
-        if (_currentState == TabState.Unselected) return;
+        if (_tabState == TabState.Unselected) return;
         
-        /*_icon.ResetIconPosition(CancellationToken.None).Forget();
-        _icon.ResetIconScale(CancellationToken.None).Forget();*/
-        _icon.PlayClip(_deselectClip, CancellationToken.None).Forget();
-        
-        _background.TweenIconAlpha(0, CancellationToken.None).Forget();
-        _text.TweenTextVisibility(0, CancellationToken.None);
-        _layout.TweenWidthAsync(_collapsedWidth, CancellationToken.None);
+        _icon.PlayClip(_iconDeselectClip, CancellationToken.None).Forget();
+        _background.PlayClip(_backgroundDeselectClip, CancellationToken.None).Forget();
+        _text.PlayClip(_textDeselectClip, CancellationToken.None).Forget();
+        _layout.PlayClip(_layoutDeselectClip, CancellationToken.None).Forget();
 
         _layout.Element.layoutPriority = 1;
         
-        _currentState = TabState.Unselected;
+        _tabState = TabState.Unselected;
+        
+        _tabExitEvent?.Invoke();
     }
     
-    public void SetButtonLocked() => Debug.Log("[EDC] Button locked");
+    private void LockedTab()
+    {
+        _icon.PlayClip(_lockedTabClip, CancellationToken.None).Forget();
+        _tabLockedEvent?.Invoke();
+    }
 }
