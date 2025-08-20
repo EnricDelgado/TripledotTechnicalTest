@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class BasePopup : MonoBehaviour
 {
-    //[Header("Popup Base Elements")]
-    //[SerializeField] protected CanvasGroup _canvasGroup;
-
+    [Header("Popup Base Elements")]
     [Header("Popup Base Timings")]
     [SerializeField] private float _popupScreenTime = 1f;
 
