@@ -55,6 +55,7 @@ public class LocalisationManager : MonoBehaviour
         var wrapper = JsonUtility.FromJson<LocalisationWrapper>(json);
 
         _allLanguages = new Dictionary<string, Dictionary<string, string>>();
+        LanguageNames.Clear();
 
         foreach (var lang in wrapper.languages)
         {
@@ -63,11 +64,12 @@ public class LocalisationManager : MonoBehaviour
                 table[entry.key] = entry.value;
 
             _allLanguages[lang.code] = table;
-            
-            if (table.ContainsKey($"lang_{lang.code}"))
-                LanguageNames[lang.code] = table[$"lang_{lang.code}"];
+
+            var nameKey = $"lang_{lang.code}";
+            if (table.ContainsKey(nameKey))
+                LanguageNames[lang.code] = table[nameKey];
             else
-                LanguageNames[lang.code] = lang.code; // fallback
+                LanguageNames[lang.code] = lang.code;
         }
     }
 
