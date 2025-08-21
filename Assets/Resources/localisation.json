@@ -1,0 +1,40 @@
+{
+  "languages": [
+    {
+      "code": "en",
+      "entries": [
+        { "key": "home_tab", "value": "Home" },
+        { "key": "shop_tab", "value": "Shop" },
+        { "key": "map_tab", "value": "Map" },
+        { "key": "options_title", "value": "Options" },
+        { "key": "mega_offer_1", "value": "Mega" },
+        { "key": "mega_offer_2", "value": "Offer" },
+        { "key": "endgame_title_1", "value": "Level" },
+        { "key": "endgame_title_2", "value": "Cleared" },
+        { "key": "lock_popup", "value": "Feature Locked!" },
+        { "key": "win_button", "value": "WIN!" },
+        { "key": "select_language", "value": "Select Language..." },
+        { "key": "lang_english", "value": "English" },
+        { "key": "lang_spanish", "value": "Spanish" }
+      ]
+    },
+    {
+      "code": "es",
+      "entries": [
+        { "key": "home_tab", "value": "Inicio" },
+        { "key": "shop_tab", "value": "Tienda" },
+        { "key": "map_tab", "value": "Mapa" },
+        { "key": "options_title", "value": "Opciones" },
+        { "key": "mega_offer_1", "value": "Mega" },
+        { "key": "mega_offer_2", "value": "Oferta" },
+        { "key": "endgame_title_1", "value": "Nivel" },
+        { "key": "endgame_title_2", "value": "Completado" },
+        { "key": "lock_popup", "value": "No disponible!" },
+        { "key": "win_button", "value": "GANA!" },
+        { "key": "select_language", "value": "Seleccion de Idioma..." },
+        { "key": "lang_english", "value": "Inglés" },
+        { "key": "lang_spanish", "value": "Español" }
+      ]
+    }
+  ]
+}
