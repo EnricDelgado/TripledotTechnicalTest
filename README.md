@@ -44,11 +44,17 @@ Script execution order hasn't been managed quite well with the localisation syst
 ### Implement Currency Bindings
 Right now, currencies are not binded to anything; it's plain text. With more time, I'd bind them to a simple observer-like pattern for them to increase when capturing different in-game events
 
-### Keep my system strict
-I spend quite a lot of time generating the reusable and scalable TweenClip system, but quickly discarding it for being on a rush - I started generating not-so carefully crafted code instead of sticking to the good architecture.
+### Keep My System Strict
+I spend quite a lot of time generating the reusable and scalable TweenClip system, but quickly discarding it for being on a rush - I started generating not-so carefully crafted code instead of sticking to the good architecture. 
 
-### Add more elements to modals
+### Add More Elements To Modals
 Right now, modals simply show; I'd rather have them do more actions instead of just exemplifying their reusability
+
+### Lacking Visuals
+I think the project could have really made use of custom shaders, and not only ParticleSystems. With more time, I'd replicate fully UI effects (like the text flash) into a shader.
+
+### Optimisiation
+A profiling round and a deep check into optimisation and the consequent refactors are usually the last - but not least - steps of a project, and I'd liked to take a deep-dive into optimising the project instead of trying to optimise it along the way
 
 ### Add sound feedback
 There is no sound system implemented, so there is a big part of the feedback missing. I'd like to add a simple sound system, and back it with options in the modal
