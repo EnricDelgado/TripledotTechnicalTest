@@ -14,8 +14,8 @@
         { "key": "lock_popup", "value": "Feature Locked!" },
         { "key": "win_button", "value": "WIN!" },
         { "key": "select_language", "value": "Select Language..." },
-        { "key": "lang_english", "value": "English" },
-        { "key": "lang_spanish", "value": "Spanish" }
+        { "key": "lang_en", "value": "English" },
+        { "key": "lang_es", "value": "Spanish" }
       ]
     },
     {
@@ -32,8 +32,8 @@
         { "key": "lock_popup", "value": "No disponible!" },
         { "key": "win_button", "value": "GANA!" },
         { "key": "select_language", "value": "Seleccion de Idioma..." },
-        { "key": "lang_english", "value": "Inglés" },
-        { "key": "lang_spanish", "value": "Español" }
+        { "key": "lang_en", "value": "Inglés" },
+        { "key": "lang_es", "value": "Español" }
       ]
     }
   ]
