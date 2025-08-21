@@ -4,9 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class LocalisedText : MonoBehaviour
 {
-    [SerializeField] private string key;
-    [SerializeField] private TextMeshProUGUI textComponent;
-    [SerializeField] private LocalisationManager localisationManager;
+    [SerializeField] private string _key;
+    [SerializeField] private TextMeshProUGUI _textComponent;
+    [SerializeField] private LocalisationManager _localisationManager;
 
     private void Start()
     {
@@ -26,6 +26,6 @@ public class LocalisedText : MonoBehaviour
 
     public void UpdateText()
     {
-        textComponent.text = localisationManager.GetText(key);
+        _textComponent.text = _localisationManager.GetText(_key);
     }
 }
