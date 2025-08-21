@@ -38,9 +38,11 @@ Texts have been localised in two languages: English and Spanish. It follows a si
 ### Cleaner Code
 Due to having to rush through the Technical Test, the code has been deteriorating and generating big code smells, specially when it comes to violating the Single Responsiblity principle. With more time, I'd stick to cleaner code
 
-### Implement Currency Additions
-- Add buttons to increase currencies
-- Add Attractor effect to the desired currency (Particle System Force Field)
+### Sketchy Localisation System
+Script execution order hasn't been managed quite well with the localisation system, and the Signleton pattern hasn't been working properly - so the references had to be forced into the texts. With more time, I'd dig deeper on that matter. Also, the language dropdown could be extremely improved, both in visuals and functionality
+
+### Implement Currency Bindings
+Right now, currencies are not binded to anything; it's plain text. With more time, I'd bind them to a simple observer-like pattern for them to increase when capturing different in-game events
 
 ### Keep my system strict
 I spend quite a lot of time generating the reusable and scalable TweenClip system, but quickly discarding it for being on a rush - I started generating not-so carefully crafted code instead of sticking to the good architecture.
