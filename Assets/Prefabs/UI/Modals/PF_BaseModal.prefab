@@ -198,6 +198,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _canvasGroup: {fileID: 5947273342866609548}
+  _fadeDuration: 0
+  _fadeEaseType: 23
 --- !u!225 &5947273342866609548
 CanvasGroup:
   m_ObjectHideFlags: 0
